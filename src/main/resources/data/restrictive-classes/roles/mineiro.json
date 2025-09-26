@@ -1,0 +1,23 @@
+{
+  "id": "mineiro",
+  "display_name": "Mineiro",
+  "icon": "minecraft:iron_pickaxe",
+  "controls": { "break_block": true, "use_item": true, "use_block": true },
+  "allow": {
+    "block_tags": ["minecraft:mineable/pickaxe", "minecraft:ores", "minecraft:stone_ore_replaceables"],
+    "blocks": [],
+    "item_tags": ["minecraft:pickaxes"],
+    "items": [],
+    "use_block_tags": ["minecraft:furnaces"],
+    "use_blocks": []
+  },
+  "deny": {
+    "block_tags": [],
+    "blocks": [],
+    "item_tags": [],
+    "items": [],
+    "use_block_tags": [],
+    "use_blocks": []
+  },
+  "effects": {}
+}

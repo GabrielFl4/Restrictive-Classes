@@ -1,0 +1,23 @@
+{
+  "id": "lenhador",
+  "display_name": "Lenhador",
+  "icon": "minecraft:iron_axe",
+  "controls": { "break_block": true, "use_item": true, "use_block": true },
+  "allow": {
+    "block_tags": ["minecraft:mineable/axe", "minecraft:logs", "minecraft:planks"],
+    "blocks": [],
+    "item_tags": ["minecraft:axes"],
+    "items": [],
+    "use_block_tags": ["minecraft:wooden_doors", "minecraft:wooden_buttons", "minecraft:wooden_trapdoors"],
+    "use_blocks": []
+  },
+  "deny": {
+    "block_tags": [],
+    "blocks": [],
+    "item_tags": [],
+    "items": [],
+    "use_block_tags": [],
+    "use_blocks": []
+  },
+  "effects": {}
+}
