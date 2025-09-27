@@ -4,6 +4,7 @@ import net.aqualoco.restrictiveclasses.command.RoleCommand;
 import net.aqualoco.restrictiveclasses.core.RC;
 import net.aqualoco.restrictiveclasses.events.Gates;
 import net.aqualoco.restrictiveclasses.role.RoleLoader;
+import net.aqualoco.restrictiveclasses.role.RoleRegistry;
 import net.aqualoco.restrictiveclasses.state.RoleHolder;
 import net.aqualoco.restrictiveclasses.state.RoleStorage;
 import net.fabricmc.api.ModInitializer;
@@ -11,7 +12,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.resource.ResourceType;
-import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,18 +27,16 @@ public class RestrictiveClasses implements ModInitializer {
 		// 2) Eventos ("gates")
 		Gates.register();
 
-		// 3) Comando /rc role ...
+		// 3) Comandos
 		RoleCommand.register();
 
 		// 4) Ao entrar, aplicar a role persistida
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			var player = handler.player;
 			var storage = RoleStorage.get(server);
-			String roleId = String.valueOf(storage.getRole(player.getUuid()));
+			String roleId = storage.getRole(player.getUuid()).orElse(RoleRegistry.DEFAULT_ROLE);
 			((RoleHolder) player).rc$setRoleId(roleId);
 			RC.LOG.info("[RC] {} entrou com role '{}'", player.getGameProfile().getName(), roleId);
 		});
-
-		RC.LOG.info("[RC] Restrictive Classes inicializado.");
 	}
 }
