@@ -4,7 +4,7 @@
   "icon": "minecraft:iron_axe",
   "controls": { "break_block": true, "use_item": true, "use_block": true },
   "allow": {
-    "block_tags": ["minecraft:mineable/axe", "minecraft:logs", "minecraft:planks"],
+    "block_tags": ["minecraft:mineable/axe", "minecraft:logs", "minecraft:planks", "minecraft:grass"],
     "blocks": [],
     "item_tags": ["minecraft:axes"],
     "items": [],

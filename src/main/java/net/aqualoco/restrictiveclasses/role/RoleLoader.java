@@ -10,7 +10,6 @@ import net.minecraft.util.Identifier;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 public final class RoleLoader implements SimpleSynchronousResourceReloadListener {
     private static final Gson GSON = new Gson();

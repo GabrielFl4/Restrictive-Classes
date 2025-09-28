@@ -1,7 +1,6 @@
 package net.aqualoco.restrictiveclasses.events;
 
-import net.aqualoco.restrictiveclasses.core.RC;
-import net.aqualoco.restrictiveclasses.role.Role;
+
 import net.aqualoco.restrictiveclasses.role.RolePermissions;
 import net.aqualoco.restrictiveclasses.role.RoleRegistry;
 import net.aqualoco.restrictiveclasses.state.RoleHolder;
@@ -11,7 +10,6 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -43,7 +41,7 @@ public final class Gates {
 
         boolean allowed = isBlockAllowedForBreak(state, perms);
         if (!allowed) {
-            deny(player, "Você não pode quebrar isso com a sua classe (" + roleId + ")");
+            //deny(player, "Você não pode quebrar isso com a sua classe (" + roleId + ")");
             return false; // cancela a quebra
         }
         return true;
@@ -72,11 +70,12 @@ public final class Gates {
 
         // deny > allow
         if (perms.denyItems.contains(stack.getItem())) {
-            deny(player, "Sua classe não permite usar este item");
+            //deny(player, "Sua classe não permite usar este item");
             return ActionResult.FAIL;
         }
         for (var t : perms.denyItemTags) {
-            if (stack.isIn(t)) { deny(player, "Sua classe não permite usar este item"); return ActionResult.FAIL; }
+            if (stack.isIn(t)) { //deny(player, "Sua classe não permite usar este item");
+                return ActionResult.FAIL; }
         }
 
         boolean ok = perms.allowItems.contains(stack.getItem());
@@ -85,7 +84,7 @@ public final class Gates {
         }
 
         if (!ok) {
-            deny(player, "Sua classe não permite usar este item");
+            //deny(player, "Sua classe não permite usar este item");
             return ActionResult.FAIL;
         }
         return ActionResult.PASS;
@@ -104,24 +103,25 @@ public final class Gates {
 
         // deny > allow
         if (perms.denyUseBlocks.contains(state.getBlock())) {
-            deny(player, "Sua classe não pode interagir com este bloco");
+            //deny(player, "Sua classe não pode interagir com este bloco");
             return ActionResult.FAIL;
         }
         for (var t : perms.denyUseBlockTags) {
-            if (state.isIn(t)) { deny(player, "Sua classe não pode interagir com este bloco"); return ActionResult.FAIL; }
+            if (state.isIn(t)) { //deny(player, "Sua classe não pode interagir com este bloco");
+                return ActionResult.FAIL; }
         }
 
         boolean ok = perms.allowUseBlocks.contains(state.getBlock());
         if (!ok) for (var t : perms.allowUseBlockTags) if (state.isIn(t)) { ok = true; break; }
 
         if (!ok) {
-            deny(player, "Sua classe não pode interagir com este bloco");
+            //(player, "Sua classe não pode interagir com este bloco");
             return ActionResult.FAIL;
         }
         return ActionResult.PASS;
     }
 
-    private static void deny(PlayerEntity player, String msg) {
-        player.sendMessage(Text.literal("§c" + msg),true); // simples e visível; depois trocamos por action bar/sons
+    private static void deny() {
+        // silêncio: o cliente já mostra a mensagem
     }
 }

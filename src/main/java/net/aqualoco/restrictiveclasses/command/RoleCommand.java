@@ -2,6 +2,7 @@ package net.aqualoco.restrictiveclasses.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.aqualoco.restrictiveclasses.network.RCNetwork;
 import net.aqualoco.restrictiveclasses.role.RoleRegistry;
 import net.aqualoco.restrictiveclasses.state.RoleHolder;
 import net.aqualoco.restrictiveclasses.state.RoleStorage;
@@ -12,7 +13,6 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
-import java.util.stream.Collectors;
 
 public final class RoleCommand {
     public static void register() {
@@ -56,7 +56,7 @@ public final class RoleCommand {
                                                     }
                                                     ((RoleHolder)p).rc$setRoleId(roleId);
                                                     RoleStorage.get(ctx.getSource().getServer()).setRole(p.getUuid(), roleId);
-                                                    ctx.getSource().sendFeedback(() -> Text.literal("Definido: " + p.getName().getString() + " → " + roleId), true);
+                                                    RCNetwork.sendRoleTo(p);
                                                     return 1;
                                                 })
                                         )))
