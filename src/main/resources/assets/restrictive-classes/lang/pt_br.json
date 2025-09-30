@@ -1,0 +1,6 @@
+{
+  "screen.restrictive_classes.select": "Escolha sua Classe",
+  "rc.requires": "Requer: %s",
+  "rc.disabled_world": "Desabilitado nesse mundo",
+  "rc.syncing": "Sincronizando regras…"
+}

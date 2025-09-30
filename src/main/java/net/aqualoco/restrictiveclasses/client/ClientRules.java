@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import net.aqualoco.restrictiveclasses.core.RC;
 import net.aqualoco.restrictiveclasses.role.Role;
 import net.aqualoco.restrictiveclasses.role.RolePermissions;
+import net.aqualoco.restrictiveclasses.role.RoleRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -53,7 +54,6 @@ public final class ClientRules {
 
     public void applyRole(String roleId) {
         this.currentRoleId = roleId;
-        RC.LOG.info("[RC/Client] role atual: {}", roleId);
     }
 
     // ---------- prechecks ----------
@@ -75,12 +75,28 @@ public final class ClientRules {
         if (p == null) return Result.PENDING;
         if (!p.controls().use_item()) return Result.ALLOW;
 
-        boolean denied = p.denyItems.contains(stack.getItem()) || inAny(stack, p.denyItemTags);
-        boolean ok = p.allowItems.contains(stack.getItem()) || inAny(stack, p.allowItemTags);
-        if (denied) return Result.REQUIRE;
-        if (ok) return Result.ALLOW;
+        // 1) regras de uso do ITEM
+        boolean deniedByItem = p.denyItems.contains(stack.getItem()) || inAny(stack, p.denyItemTags);
+        boolean allowedByItem = p.allowItems.contains(stack.getItem()) || inAny(stack, p.allowItemTags);
+
+        // 2) se for BlockItem, também avaliamos "use_block" (abrir/colocar/interagir)
+        boolean deniedByBlock = false;
+        boolean allowedByBlock = false;
+        if (stack.getItem() instanceof net.minecraft.item.BlockItem bi) {
+            Block b = bi.getBlock();
+            deniedByBlock = p.denyUseBlocks.contains(b) || inAny(b, p.denyUseBlockTags);
+            allowedByBlock = p.allowUseBlocks.contains(b) || inAny(b, p.allowUseBlockTags);
+        }
+
+        // deny tem prioridade
+        if (deniedByItem || deniedByBlock) return Result.REQUIRE;
+
+        if (allowedByItem || allowedByBlock) return Result.ALLOW;
+
+        // não permitido por esta role → ver se outra permitiria
         return rolesThatAllowUseItem(stack).isEmpty() ? Result.DISABLED : Result.REQUIRE;
     }
+
 
     public Result canUseBlock(BlockState state) {
         if (!isReady()) return Result.PENDING;
@@ -202,17 +218,31 @@ public final class ClientRules {
     }
 
     private List<String> rolesThatAllowUseItem(ItemStack stack) {
-        return roles.values().stream()
-                .filter(r -> {
-                    var p = perms.get(r.id());
-                    if (p == null || !p.controls().use_item()) return false;
-                    boolean denied = p.denyItems.contains(stack.getItem()) || inAny(stack, p.denyItemTags);
-                    boolean ok = p.allowItems.contains(stack.getItem()) || inAny(stack, p.allowItemTags);
-                    return !denied && ok;
-                })
-                .map(Role::display_name)
-                .limit(4)
-                .collect(Collectors.toList());
+        boolean isBlockItem = stack.getItem() instanceof net.minecraft.item.BlockItem;
+        Block block = isBlockItem ? ((net.minecraft.item.BlockItem) stack.getItem()).getBlock() : null;
+
+        return roles.values().stream().filter(r -> {
+            var p = perms.get(r.id());
+            if (p == null) return false;
+
+            // para item normal: exige governar use_item;
+            // para BlockItem: aceita governar use_item OU use_block
+            boolean governs = isBlockItem ? (p.controls().use_item() || p.controls().use_block())
+                    : p.controls().use_item();
+            if (!governs) return false;
+
+            boolean deniedByItem = p.denyItems.contains(stack.getItem()) || inAny(stack, p.denyItemTags);
+            boolean allowedByItem = p.allowItems.contains(stack.getItem()) || inAny(stack, p.allowItemTags);
+
+            boolean deniedByBlock = false, allowedByBlock = false;
+            if (isBlockItem && block != null) {
+                deniedByBlock = p.denyUseBlocks.contains(block) || inAny(block, p.denyUseBlockTags);
+                allowedByBlock = p.allowUseBlocks.contains(block) || inAny(block, p.allowUseBlockTags);
+            }
+
+            if (deniedByItem || deniedByBlock) return false; // deny tem prioridade
+            return allowedByItem || allowedByBlock;
+        }).map(Role::display_name).limit(4).collect(java.util.stream.Collectors.toList());
     }
 
     private List<String> rolesThatAllowUseBlock(BlockState state) {
@@ -230,4 +260,18 @@ public final class ClientRules {
     }
 
     public enum Result { ALLOW, REQUIRE, DISABLED, PENDING }  // <= novo PENDING
+
+    private static boolean inAny(Block block, List<TagKey<Block>> tags) {
+        BlockState state = block.getDefaultState();
+        for (var t : tags) if (state.isIn(t)) return true;
+        return false;
+    }
+
+    public java.util.Collection<Role> listRoles() {
+        return java.util.Collections.unmodifiableCollection(roles.values());
+    }
+    public String getCurrentRoleId() { return currentRoleId; }
+    public boolean isUnassigned() {
+        return RoleRegistry.DEFAULT_ROLE.equals(currentRoleId);
+    }
 }

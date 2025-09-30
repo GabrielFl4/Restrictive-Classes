@@ -3,6 +3,7 @@ package net.aqualoco.restrictiveclasses.network;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import net.aqualoco.restrictiveclasses.core.RC;
 import net.aqualoco.restrictiveclasses.role.Role;
 import net.aqualoco.restrictiveclasses.role.RoleRegistry;
 import net.aqualoco.restrictiveclasses.state.RoleHolder;
@@ -21,12 +22,12 @@ public final class RCNetwork {
 
     public static void sendRulesTo(ServerPlayerEntity player) {
         long version = computeRulesVersion();
+        String jsonArray = new com.google.gson.Gson().toJson(RoleRegistry.all());
 
-        JsonArray arr = new JsonArray();
-        for (Role r : RoleRegistry.all()) {
-            arr.add(GSON.toJsonTree(r)); // serializa cada role como JSON
-        }
-        String jsonArray = GSON.toJson(arr);
+        net.aqualoco.restrictiveclasses.core.RC.LOG.info(
+                "[RC] rules_sync → {} (version={}, roles={})",
+                player.getGameProfile().getName(), version, RoleRegistry.all().size()
+        );
 
         ServerPlayNetworking.send(player, new RulesSyncS2CPayload(version, jsonArray));
     }
